@@ -3,58 +3,416 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>隨手筆記小幫手</title>
+    <title>英文學習閱讀助手</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; }
-        textarea { width: 100%; height: 100px; padding: 10px; margin-bottom: 10px; }
-        button { padding: 10px 20px; cursor: pointer; margin-right: 5px; }
-        #history { margin-top: 20px; }
-        li { margin-bottom: 5px; }
+        body {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .settings-panel {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .setting-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        button {
+            padding: 8px 16px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #article-display {
+            margin-top: 25px;
+        }
+        .paragraph-card {
+            background-color: #fff;
+            border: 1px solid #e3e6f0;
+            border-left: 4px solid #4e73df;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .para-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+        .para-title {
+            font-weight: bold;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        .para-play-btn {
+            background-color: #17a2b8;
+            font-size: 0.85em;
+            padding: 5px 12px;
+        }
+        .para-play-btn:hover {
+            background-color: #138496;
+        }
+        .article-paragraph {
+            margin: 0;
+            font-size: 1.25em;
+            line-height: 1.8;
+        }
+        .word {
+            cursor: pointer;
+            padding: 1px 3px;
+            border-radius: 3px;
+            transition: 0.2s;
+        }
+        .word:hover {
+            background-color: #d1ecf1;
+        }
+        .active-word {
+            background-color: #ffeeba;
+            border-bottom: 2px solid #ffc107;
+        }
+        .action-panel {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #bee5eb;
+            background-color: #e2f3f5;
+            border-radius: 8px;
+            display: none;
+        }
+        .action-panel h3 {
+            margin: 0 0 10px 0;
+            color: #0c5460;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 12px 10px;
+            margin-bottom: 15px;
+            align-items: baseline;
+        }
+        .vocab-list {
+            margin-top: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 0.95em;
+        }
+        th, td {
+            border: 1px solid #eee;
+            padding: 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+        .dict-btn {
+            color: #007BFF;
+            text-decoration: none;
+            font-size: 0.9em;
+            display: block;
+            margin-top: 5px;
+        }
+        .dict-btn:hover {
+            text-decoration: underline;
+        }
+        .loading-text {
+            color: #888;
+            font-size: 0.9em;
+        }
+        .example-text {
+            color: #28a745;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
-    <h1>隨手筆記小幫手</h1>
-    <textarea id="content" placeholder="輸入任何想記錄或朗讀的文字..."></textarea>
-    <br>
-    <button onclick="saveAndSpeak()">記錄並朗讀</button>
-    <button onclick="clearHistory()" style="background: #ffcccc;">清空紀錄</button>
 
-    <div id="history">
-        <h3>歷史紀錄</h3>
-        <ul id="historyList"></ul>
+<div class="container">
+    <h2>英文閱讀助手</h2>
+
+    <div class="settings-panel">
+        <div class="setting-group">
+            <label>語音選單：</label>
+            <select id="voice-select"></select>
+        </div>
+        <div class="setting-group">
+            <label>語速：</label>
+            <input type="range" id="rate-input" min="0.5" max="1.5" step="0.1" value="1">
+            <span id="rate-val">1.0</span>
+        </div>
+        <button onclick="stopSpeaking()" style="background-color: #dc3545;">⏹ 停止發音</button>
+    </div>
+    
+    <textarea id="text-input" placeholder="請貼上英文文章，使用連續兩個換行鍵（Enter）來自動分段..."></textarea>
+    <button onclick="processText()">載入文章內容</button>
+
+    <div id="article-display"></div>
+
+    <div id="action-panel" class="action-panel">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h3 id="selected-word">單字</h3>
+            <button onclick="speakText(currentWord)">🔊 朗讀單字</button>
+        </div>
+        
+        <div class="info-grid">
+            <strong>詞性：</strong> <span id="word-pos">等待選擇...</span>
+            <strong>翻譯：</strong> <span id="word-explanation">等待選擇...</span>
+            <strong>例句/用法：</strong> <span id="word-usage" class="example-text">等待選擇...</span>
+            <strong>字典：</strong> <a id="dict-link" href="#" target="_blank" style="color:#0056b3;">劍橋中英字典 ↗</a>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <label>備註：</label>
+            <input type="text" id="word-note" style="flex:1; padding: 6px; border:1px solid #ccc; border-radius:4px;" placeholder="輸入個人筆記...">
+            <button onclick="addToVocab()" style="background-color: #28a745;">加入清單</button>
+        </div>
     </div>
 
-    <script>
-        function saveAndSpeak() {
-            const text = document.getElementById("content").value.trim();
-            if (!text) return alert("請輸入內容");
+    <div class="vocab-list">
+        <h3>我的單字表</h3>
+        <table id="vocab-table">
+            <thead>
+                <tr>
+                    <th style="width: 12%;">單字</th>
+                    <th style="width: 8%;">詞性</th>
+                    <th style="width: 15%;">中文翻譯</th>
+                    <th style="width: 30%;">例句/用法</th>
+                    <th style="width: 20%;">個人備註</th>
+                    <th style="width: 15%;">操作</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
 
-            // 1. 朗讀
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = 'zh-TW'; // 設定為中文
-            window.speechSynthesis.speak(msg);
+<script>
+    let currentWord = '';
+    let currentTranslation = '';
+    let currentPos = '';
+    let currentExample = '';
+    let voices = [];
 
-            // 2. 紀錄 (存入 LocalStorage)
-            let history = JSON.parse(localStorage.getItem('myNotes') || '[]');
-            history.unshift(text); // 將新內容放在最前面
-            localStorage.setItem('myNotes', JSON.stringify(history));
+    // 初始化語音：限定特定 Google 語音
+    function initVoices() {
+        let allVoices = speechSynthesis.getVoices();
+        
+        // 指定想要的三個 Google 語音
+        const targetNames = [
+            'Google US English', 
+            'Google UK English Female', 
+            'Google UK English Male'
+        ];
+        
+        // 篩選出符合這三個名字的語音
+        voices = allVoices.filter(v => targetNames.includes(v.name));
 
-            document.getElementById("content").value = ""; // 清空輸入框
-            renderHistory();
+        // 防呆機制：如果找不到指定語音（例如不是使用 Chrome），則顯示所有英文語音
+        if (voices.length === 0) {
+            voices = allVoices.filter(v => v.lang.startsWith('en'));
         }
 
-        function renderHistory() {
-            const list = document.getElementById('historyList');
-            const history = JSON.parse(localStorage.getItem('myNotes') || '[]');
-            list.innerHTML = history.map(item => `<li>${item}</li>`).join('');
-        }
+        const select = document.getElementById('voice-select');
+        select.innerHTML = voices.map((v, i) => `<option value="${i}">${v.name}</option>`).join('');
+    }
 
-        function clearHistory() {
-            localStorage.removeItem('myNotes');
-            renderHistory();
-        }
+    // 確保語音庫載入完成後執行
+    window.speechSynthesis.onvoiceschanged = initVoices;
+    initVoices();
 
-        renderHistory(); // 初始化顯示
-    </script>
+    document.getElementById('rate-input').oninput = function() {
+        document.getElementById('rate-val').innerText = parseFloat(this.value).toFixed(1);
+    };
+
+    // 處理文章：使用兩個換行鍵作為分段依據
+    function processText() {
+        const input = document.getElementById('text-input').value;
+        const display = document.getElementById('article-display');
+        if (!input.trim()) return;
+
+        const paragraphs = input.split(/\n\s*\n/).filter(p => p.trim() !== '');
+        
+        display.innerHTML = paragraphs.map((p, index) => {
+            let wrapped = p.replace(/([a-zA-Z]+)/g, '<span class="word" onclick="selectWord(this, \'$1\')">$1</span>');
+            wrapped = wrapped.replace(/\n/g, '<br>');
+
+            return `
+            <div class="paragraph-card">
+                <div class="para-header">
+                    <span class="para-title">段落 ${index + 1}</span>
+                    <button class="para-play-btn" onclick="speakParagraph(${index})">🔊 朗讀整段</button>
+                </div>
+                <p class="article-paragraph" id="para-text-${index}">${wrapped}</p>
+            </div>`;
+        }).join('');
+        
+        document.getElementById('action-panel').style.display = 'none';
+    }
+
+    // 選擇單字
+    async function selectWord(el, word) {
+        document.querySelectorAll('.word').forEach(w => w.classList.remove('active-word'));
+        el.classList.add('active-word');
+
+        currentWord = word.toLowerCase();
+        document.getElementById('selected-word').innerText = currentWord;
+        document.getElementById('action-panel').style.display = 'block';
+        document.getElementById('word-note').value = '';
+        
+        const dictUrl = `https://dictionary.cambridge.org/zht/dictionary/english-chinese-traditional/${currentWord}`;
+        document.getElementById('dict-link').href = dictUrl;
+
+        document.getElementById('word-pos').innerHTML = '<span class="loading-text">查詢中...</span>';
+        document.getElementById('word-explanation').innerHTML = '<span class="loading-text">查詢中...</span>';
+        document.getElementById('word-usage').innerHTML = '<span class="loading-text">查詢中...</span>';
+
+        speakText(currentWord);
+        
+        fetchWordDetails(currentWord);
+        fetchTrans(currentWord);
+    }
+
+    const posAbbr = {
+        "noun": "n.", "verb": "v.", "adjective": "adj.", "adverb": "adv.",
+        "pronoun": "pron.", "preposition": "prep.", "conjunction": "conj.", "interjection": "int."
+    };
+
+    async function fetchWordDetails(word) {
+        try {
+            const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+            const data = await res.json();
+            
+            if (data[0] && data[0].meanings) {
+                const types = [...new Set(data[0].meanings.map(m => m.partOfSpeech.toLowerCase()))];
+                currentPos = types.map(t => posAbbr[t] || t).join(', ');
+                document.getElementById('word-pos').innerText = currentPos;
+
+                let foundExample = '';
+                for (let meaning of data[0].meanings) {
+                    for (let def of meaning.definitions) {
+                        if (def.example) {
+                            foundExample = def.example;
+                            break;
+                        }
+                    }
+                    if (foundExample) break;
+                }
+                
+                currentExample = foundExample || '無提供例句';
+                document.getElementById('word-usage').innerText = currentExample;
+
+            } else {
+                currentPos = '-';
+                currentExample = '-';
+                document.getElementById('word-pos').innerText = '無資料';
+                document.getElementById('word-usage').innerText = '無資料';
+            }
+        } catch {
+            currentPos = '-';
+            currentExample = '-';
+            document.getElementById('word-pos').innerText = '讀取失敗';
+            document.getElementById('word-usage').innerText = '讀取失敗';
+        }
+    }
+
+    async function fetchTrans(word) {
+        try {
+            const res = await fetch(`https://api.mymemory.translated.net/get?q=${word}&langpair=en|zh-TW`);
+            const data = await res.json();
+            currentTranslation = data.responseData.translatedText;
+            document.getElementById('word-explanation').innerText = currentTranslation;
+        } catch {
+            currentTranslation = '翻譯失敗';
+            document.getElementById('word-explanation').innerText = currentTranslation;
+        }
+    }
+
+    // 通用的發音功能
+    function speakText(text) {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
+        const voiceIdx = document.getElementById('voice-select').value;
+        if (voices[voiceIdx]) msg.voice = voices[voiceIdx];
+        msg.rate = parseFloat(document.getElementById('rate-input').value);
+        window.speechSynthesis.speak(msg);
+    }
+
+    // 停止發音
+    function stopSpeaking() {
+        window.speechSynthesis.cancel();
+    }
+
+    // 朗讀指定段落
+    function speakParagraph(index) {
+        const paraElement = document.getElementById(`para-text-${index}`);
+        if (paraElement) {
+            speakText(paraElement.innerText);
+        }
+    }
+
+    // 加入單字表
+    function addToVocab() {
+        if (!currentWord) return;
+        const tbody = document.querySelector('#vocab-table tbody');
+        const note = document.getElementById('word-note').value || '-';
+        const dictUrl = `https://dictionary.cambridge.org/zht/dictionary/english-chinese-traditional/${currentWord}`;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${currentWord}</strong></td>
+            <td>${currentPos}</td>
+            <td>${currentTranslation}</td>
+            <td class="example-text">${currentExample}</td>
+            <td>${note}</td>
+            <td>
+                <button onclick="speakText('${currentWord}')" style="padding:4px 8px; font-size:12px; margin-bottom:5px;">🔊 發音</button>
+                <a href="${dictUrl}" target="_blank" class="dict-btn">檢視字典</a>
+            </td>
+        `;
+        tbody.prepend(tr); 
+        document.getElementById('word-note').value = '';
+    }
+</script>
+
 </body>
 </html>
