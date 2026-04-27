@@ -2,51 +2,59 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>查字典小幫手</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>隨手筆記小幫手</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; }
+        textarea { width: 100%; height: 100px; padding: 10px; margin-bottom: 10px; }
+        button { padding: 10px 20px; cursor: pointer; margin-right: 5px; }
+        #history { margin-top: 20px; }
+        li { margin-bottom: 5px; }
+    </style>
 </head>
 <body>
-    <h2>查字典小幫手</h2>
-    <input type="text" id="wordInput" placeholder="輸入要查詢的單字">
-    <button onclick="searchWord()">查詢</button>
-    
-    <p id="result"></p>
-    <button id="speakBtn" style="display:none;" onclick="speakWord()">朗讀</button>
-    
-    <h3>查詢紀錄</h3>
-    <ul id="historyList"></ul>
+    <h1>隨手筆記小幫手</h1>
+    <textarea id="content" placeholder="輸入任何想記錄或朗讀的文字..."></textarea>
+    <br>
+    <button onclick="saveAndSpeak()">記錄並朗讀</button>
+    <button onclick="clearHistory()" style="background: #ffcccc;">清空紀錄</button>
+
+    <div id="history">
+        <h3>歷史紀錄</h3>
+        <ul id="historyList"></ul>
+    </div>
 
     <script>
-        // 簡單的查詢功能 (這裡示範用模擬資料)
-        const dictionary = {
-            "apple": "蘋果",
-            "code": "程式碼",
-            "github": "一個程式碼託管平台"
-        };
+        function saveAndSpeak() {
+            const text = document.getElementById("content").value.trim();
+            if (!text) return alert("請輸入內容");
 
-        function searchWord() {
-            const word = document.getElementById("wordInput").value.toLowerCase();
-            const result = dictionary[word] || "找不到這個單字";
-            
-            document.getElementById("result").innerText = word + ": " + result;
-            
-            if (dictionary[word]) {
-                document.getElementById("speakBtn").style.display = "inline";
-                addToHistory(word);
-            }
+            // 1. 朗讀
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'zh-TW'; // 設定為中文
+            window.speechSynthesis.speak(msg);
+
+            // 2. 紀錄 (存入 LocalStorage)
+            let history = JSON.parse(localStorage.getItem('myNotes') || '[]');
+            history.unshift(text); // 將新內容放在最前面
+            localStorage.setItem('myNotes', JSON.stringify(history));
+
+            document.getElementById("content").value = ""; // 清空輸入框
+            renderHistory();
         }
 
-        function speakWord() {
-            const word = document.getElementById("wordInput").value;
-            const utterance = new SpeechSynthesisUtterance(word);
-            window.speechSynthesis.speak(utterance);
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            const history = JSON.parse(localStorage.getItem('myNotes') || '[]');
+            list.innerHTML = history.map(item => `<li>${item}</li>`).join('');
         }
 
-        function addToHistory(word) {
-            const list = document.getElementById("historyList");
-            const li = document.createElement("li");
-            li.innerText = word;
-            list.appendChild(li);
+        function clearHistory() {
+            localStorage.removeItem('myNotes');
+            renderHistory();
         }
+
+        renderHistory(); // 初始化顯示
     </script>
 </body>
 </html>
