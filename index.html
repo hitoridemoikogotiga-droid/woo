@@ -13,13 +13,53 @@
             color: #333;
         }
         .container {
-            max-width: 1000px;
+            /* 為了容納左右雙欄，將最大寬度加寬 */
+            max-width: 1400px;
             margin: auto;
             background: white;
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
+        
+        /* 新增：左右排版的主容器 */
+        .main-layout {
+            display: flex;
+            gap: 25px;
+            align-items: flex-start;
+            margin-top: 20px;
+        }
+        .left-column {
+            flex: 6;
+            min-width: 0;
+        }
+        .right-column {
+            flex: 4;
+            min-width: 0;
+            /* 讓右邊區塊在向下捲動時固定在畫面上方，並可獨立捲動 */
+            position: sticky;
+            top: 20px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            padding-right: 5px; /* 預留捲軸空間 */
+        }
+
+        /* 針對小螢幕（如手機、平板）自動切換回上下排版 */
+        @media (max-width: 900px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .left-column, .right-column {
+                flex: 1;
+                width: 100%;
+            }
+            .right-column {
+                position: static;
+                max-height: none;
+                overflow-y: visible;
+            }
+        }
+
         .settings-panel {
             background-color: #ffffff;
             padding: 15px;
@@ -108,12 +148,12 @@
             border-bottom: 2px solid #ffc107;
         }
         .action-panel {
-            margin-top: 20px;
             padding: 20px;
             border: 1px solid #bee5eb;
             background-color: #e2f3f5;
             border-radius: 8px;
             display: none;
+            margin-bottom: 30px;
         }
         .action-panel h3 {
             margin: 0 0 10px 0;
@@ -126,8 +166,11 @@
             margin-bottom: 15px;
             align-items: baseline;
         }
-        .vocab-list {
-            margin-top: 40px;
+        .vocab-list h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #007BFF;
+            padding-bottom: 10px;
+            display: inline-block;
         }
         table {
             width: 100%;
@@ -170,59 +213,62 @@
 <div class="container">
     <h2>英文閱讀助手</h2>
 
-    <div class="settings-panel">
-        <div class="setting-group">
-            <label>語音選單：</label>
-            <select id="voice-select"></select>
-        </div>
-        <div class="setting-group">
-            <label>語速：</label>
-            <input type="range" id="rate-input" min="0.5" max="1.5" step="0.1" value="1">
-            <span id="rate-val">1.0</span>
-        </div>
-        <button onclick="stopSpeaking()" style="background-color: #dc3545;">⏹ 停止發音</button>
-    </div>
-    
-    <textarea id="text-input" placeholder="請貼上英文文章，使用連續兩個換行鍵（Enter）來自動分段..."></textarea>
-    <button onclick="processText()">載入文章內容</button>
+    <div class="main-layout">
+        <div class="left-column">
+            <div class="settings-panel">
+                <div class="setting-group">
+                    <label>語音選單：</label>
+                    <select id="voice-select"></select>
+                </div>
+                <div class="setting-group">
+                    <label>語速：</label>
+                    <input type="range" id="rate-input" min="0.5" max="1.5" step="0.1" value="1">
+                    <span id="rate-val">1.0</span>
+                </div>
+                <button onclick="stopSpeaking()" style="background-color: #dc3545;">⏹ 停止發音</button>
+            </div>
+            
+            <textarea id="text-input" placeholder="請貼上英文文章，使用連續兩個換行鍵（Enter）來自動分段..."></textarea>
+            <button onclick="processText()">載入文章內容</button>
 
-    <div id="article-display"></div>
-
-    <div id="action-panel" class="action-panel">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-            <h3 id="selected-word">單字</h3>
-            <button onclick="speakText(currentWord)">🔊 朗讀單字</button>
-        </div>
-        
-        <div class="info-grid">
-            <strong>詞性：</strong> <span id="word-pos">等待選擇...</span>
-            <strong>翻譯：</strong> <span id="word-explanation">等待選擇...</span>
-            <strong>例句/用法：</strong> <span id="word-usage" class="example-text">等待選擇...</span>
-            <strong>字典：</strong> <a id="dict-link" href="#" target="_blank" style="color:#0056b3;">劍橋中英字典 ↗</a>
+            <div id="article-display"></div>
         </div>
 
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <label>備註：</label>
-            <input type="text" id="word-note" style="flex:1; padding: 6px; border:1px solid #ccc; border-radius:4px;" placeholder="輸入個人筆記...">
-            <button onclick="addToVocab()" style="background-color: #28a745;">加入清單</button>
-        </div>
-    </div>
+        <div class="right-column">
+            <div id="action-panel" class="action-panel">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <h3 id="selected-word">單字</h3>
+                    <button onclick="speakText(currentWord)">🔊 朗讀單字</button>
+                </div>
+                
+                <div class="info-grid">
+                    <strong>詞性：</strong> <span id="word-pos">等待選擇...</span>
+                    <strong>翻譯：</strong> <span id="word-explanation">等待選擇...</span>
+                    <strong>例句/用法：</strong> <span id="word-usage" class="example-text">等待選擇...</span>
+                    <strong>字典：</strong> <a id="dict-link" href="#" target="_blank" style="color:#0056b3;">劍橋中英字典 ↗</a>
+                </div>
 
-    <div class="vocab-list">
-        <h3>我的單字表</h3>
-        <table id="vocab-table">
-            <thead>
-                <tr>
-                    <th style="width: 12%;">單字</th>
-                    <th style="width: 8%;">詞性</th>
-                    <th style="width: 15%;">中文翻譯</th>
-                    <th style="width: 30%;">例句/用法</th>
-                    <th style="width: 20%;">個人備註</th>
-                    <th style="width: 15%;">操作</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <label>個人備註：</label>
+                    <input type="text" id="word-note" style="padding: 8px; border:1px solid #ccc; border-radius:4px;" placeholder="輸入個人筆記...">
+                    <button onclick="addToVocab()" style="background-color: #28a745; width: 100%;">加入單字表</button>
+                </div>
+            </div>
+
+            <div class="vocab-list">
+                <h3>我的單字表</h3>
+                <table id="vocab-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">單字與操作</th>
+                            <th style="width: 35%;">解釋與詞性</th>
+                            <th style="width: 40%;">備註與例句</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -236,18 +282,13 @@
     // 初始化語音：限定特定 Google 語音
     function initVoices() {
         let allVoices = speechSynthesis.getVoices();
-        
-        // 指定想要的三個 Google 語音
         const targetNames = [
             'Google US English', 
             'Google UK English Female', 
             'Google UK English Male'
         ];
         
-        // 篩選出符合這三個名字的語音
         voices = allVoices.filter(v => targetNames.includes(v.name));
-
-        // 防呆機制：如果找不到指定語音（例如不是使用 Chrome），則顯示所有英文語音
         if (voices.length === 0) {
             voices = allVoices.filter(v => v.lang.startsWith('en'));
         }
@@ -256,7 +297,6 @@
         select.innerHTML = voices.map((v, i) => `<option value="${i}">${v.name}</option>`).join('');
     }
 
-    // 確保語音庫載入完成後執行
     window.speechSynthesis.onvoiceschanged = initVoices;
     initVoices();
 
@@ -264,7 +304,7 @@
         document.getElementById('rate-val').innerText = parseFloat(this.value).toFixed(1);
     };
 
-    // 處理文章：使用兩個換行鍵作為分段依據
+    // 處理文章
     function processText() {
         const input = document.getElementById('text-input').value;
         const display = document.getElementById('article-display');
@@ -286,7 +326,12 @@
             </div>`;
         }).join('');
         
-        document.getElementById('action-panel').style.display = 'none';
+        document.getElementById('action-panel').style.display = 'block';
+        // 初次載入時重置面板
+        document.getElementById('selected-word').innerText = '請點選左側單字';
+        document.getElementById('word-pos').innerText = '-';
+        document.getElementById('word-explanation').innerText = '-';
+        document.getElementById('word-usage').innerText = '-';
     }
 
     // 選擇單字
@@ -340,7 +385,6 @@
                 
                 currentExample = foundExample || '無提供例句';
                 document.getElementById('word-usage').innerText = currentExample;
-
             } else {
                 currentPos = '-';
                 currentExample = '-';
@@ -367,7 +411,6 @@
         }
     }
 
-    // 通用的發音功能
     function speakText(text) {
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(text);
@@ -377,12 +420,10 @@
         window.speechSynthesis.speak(msg);
     }
 
-    // 停止發音
     function stopSpeaking() {
         window.speechSynthesis.cancel();
     }
 
-    // 朗讀指定段落
     function speakParagraph(index) {
         const paraElement = document.getElementById(`para-text-${index}`);
         if (paraElement) {
@@ -390,23 +431,27 @@
         }
     }
 
-    // 加入單字表
     function addToVocab() {
         if (!currentWord) return;
         const tbody = document.querySelector('#vocab-table tbody');
-        const note = document.getElementById('word-note').value || '-';
+        const note = document.getElementById('word-note').value || '無';
         const dictUrl = `https://dictionary.cambridge.org/zht/dictionary/english-chinese-traditional/${currentWord}`;
 
+        // 為了適應右側較窄的空間，將表格簡化合併為三個主要欄位
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><strong>${currentWord}</strong></td>
-            <td>${currentPos}</td>
-            <td>${currentTranslation}</td>
-            <td class="example-text">${currentExample}</td>
-            <td>${note}</td>
             <td>
-                <button onclick="speakText('${currentWord}')" style="padding:4px 8px; font-size:12px; margin-bottom:5px;">🔊 發音</button>
+                <strong>${currentWord}</strong><br>
+                <button onclick="speakText('${currentWord}')" style="padding:2px 6px; font-size:12px; margin-top:5px;">🔊 發音</button>
+            </td>
+            <td>
+                <span style="color: #666; font-size: 0.9em;">(${currentPos})</span><br>
+                ${currentTranslation}<br>
                 <a href="${dictUrl}" target="_blank" class="dict-btn">檢視字典</a>
+            </td>
+            <td>
+                <strong style="font-size: 0.9em;">備註：</strong>${note}<br>
+                <div class="example-text" style="margin-top: 5px; font-size: 0.9em;">${currentExample}</div>
             </td>
         `;
         tbody.prepend(tr); 
