@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>查字典小幫手</title>
+</head>
+<body>
+    <h2>查字典小幫手</h2>
+    <input type="text" id="wordInput" placeholder="輸入要查詢的單字">
+    <button onclick="searchWord()">查詢</button>
+    
+    <p id="result"></p>
+    <button id="speakBtn" style="display:none;" onclick="speakWord()">朗讀</button>
+    
+    <h3>查詢紀錄</h3>
+    <ul id="historyList"></ul>
+
+    <script>
+        // 簡單的查詢功能 (這裡示範用模擬資料)
+        const dictionary = {
+            "apple": "蘋果",
+            "code": "程式碼",
+            "github": "一個程式碼託管平台"
+        };
+
+        function searchWord() {
+            const word = document.getElementById("wordInput").value.toLowerCase();
+            const result = dictionary[word] || "找不到這個單字";
+            
+            document.getElementById("result").innerText = word + ": " + result;
+            
+            if (dictionary[word]) {
+                document.getElementById("speakBtn").style.display = "inline";
+                addToHistory(word);
+            }
+        }
+
+        function speakWord() {
+            const word = document.getElementById("wordInput").value;
+            const utterance = new SpeechSynthesisUtterance(word);
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function addToHistory(word) {
+            const list = document.getElementById("historyList");
+            const li = document.createElement("li");
+            li.innerText = word;
+            list.appendChild(li);
+        }
+    </script>
+</body>
+</html>
